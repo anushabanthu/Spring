@@ -26,55 +26,55 @@ public class EmployeeController {
     EmployeeService employeeService;
 
 //    Benefits
-    @GetMapping("/getBenefits")
+    @GetMapping("/get-benefits")
     public List<Benefit> getBenefits(){
 
         return benefitService.getBenefits();
     }
-    @PostMapping("/addBenefit")
+    @PostMapping("/add-benefit")
     public void addBenefit(@RequestBody Benefit benefit){
 
         benefitService.addBenefit(benefit);
     }
-    @DeleteMapping("/deleteBenefit/{id}")
+    @DeleteMapping("/delete-benefit/{id}")
     public void deleteBenefit(@PathVariable int id){
         benefitService.deleteBenefitById(id);
     }
 //    Locations
-    @GetMapping("/getLocations")
+    @GetMapping("/get-locations")
     public List<Location> getLocations(){
         return locationService.getLocations();
     }
-    @PostMapping("/addLocation")
+    @PostMapping("/add-location")
     public void addLocation(@RequestBody Location location){
         locationService.addLocations(location);
     }
-    @DeleteMapping("/deleteLocation/{id}")
+    @DeleteMapping("/delete-location/{id}")
     public void deleteLocation(@PathVariable int id){
         locationService.deleteLocationById(id);
     }
 //    Employees
-    @GetMapping("/getEmployees")
+    @GetMapping("/get-employees")
     public List<Employee> getEmployees(){
         return employeeService.getEmployees();
     }
-    @PostMapping("/addEmployee")
+    @PostMapping("/add-employee")
     public void addEmployee(@RequestBody Employee employee){
         employeeService.addEmployees(employee);
     }
-    @DeleteMapping("/deleteEmployee/{id}")
+    @DeleteMapping("/delete-employee/{id}")
     public void deleteEmployee(@PathVariable int id){
         employeeService.deleteEmployeeById(id);
     }
 
 //    Employee Details with location name and location country
-    @GetMapping("/getEmpLocationDetails")
+    @GetMapping("/get-empLocationDetails")
     public List getEmpLocationDetails(){
         return employeeService.getEmployeesWithLocation();
     }
 
 //    Employee Details with benefits
-    @GetMapping("/getEmpBenefitsDetails")
+    @GetMapping("/get-empBenefitsDetails")
     public List getEmpBenefitsDetails(){
         return employeeService.getEmployeesWithBenefits();
     }

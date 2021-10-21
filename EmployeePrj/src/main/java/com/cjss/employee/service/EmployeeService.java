@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
-	static private List<Employee> employees = new ArrayList<>();
+	private List<Employee> employees = new ArrayList<>();
 	@Autowired
 	LocationService locationService = new LocationService();
 	BenefitService benefitService = new BenefitService();
@@ -47,13 +47,6 @@ public class EmployeeService {
 	}
 
 	public void deleteEmployeeById(int id){
-		int count=0;
-		for(Employee e:employees){
-			if(e.getemployeeId() == id){
-				break;
-			}
-			count++;
-		}
-		employees.remove(count);
+		employees.stream().filter(emp->emp.getemployeeId()==id).collect(Collectors.toList()).forEach(each->employees.remove(each));
 	}
 }

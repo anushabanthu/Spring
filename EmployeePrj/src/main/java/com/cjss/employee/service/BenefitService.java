@@ -5,10 +5,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BenefitService {
-	static private List<Benefit> benefits = new ArrayList<>();
+	private List<Benefit> benefits = new ArrayList<>();
 	public static void main(String[] args) {
 	}
 	public void addBenefit(Benefit benefit) {
@@ -18,14 +19,7 @@ public class BenefitService {
 		return benefits;
 	}
 	public void deleteBenefitById(int id){
-		int count=0;
-		for(Benefit b:benefits){
-			if(b.getBenefitId() == id){
-				break;
-			}
-			count++;
-		}
-		benefits.remove(count);
+		benefits.stream().filter(benefit->benefit.getBenefitId()==id).collect(Collectors.toList()).forEach(each->benefits.remove(each));
 	}
 }
 

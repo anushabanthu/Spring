@@ -6,10 +6,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LocationService {
-	static private List<Location> locations = new ArrayList<>();
+	private List<Location> locations = new ArrayList<>();
 	public static void main(String[] args) {
 	}
 	public void addLocations(Location location) {
@@ -19,13 +20,6 @@ public class LocationService {
 		return locations;
 	}
 	public void deleteLocationById(int id){
-		int count=0;
-		for(Location l:locations){
-			if(l.getLocationId() == id){
-				break;
-			}
-			count++;
-		}
-		locations.remove(count);
+		locations.stream().filter(loc->loc.getLocationId()==id).collect(Collectors.toList()).forEach(each->locations.remove(each));
 	}
 }

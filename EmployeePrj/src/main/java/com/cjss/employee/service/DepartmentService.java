@@ -5,10 +5,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DepartmentService {
-	static private List<Department> departments = new ArrayList<>();
+	private List<Department> departments = new ArrayList<>();
 	public static void main(String[] args) {
 	}
 	public void addDepartments(Department department) {
@@ -18,13 +19,6 @@ public class DepartmentService {
 		return departments;
 	}
 	public void deleteDepartmentById(int id){
-		int count=0;
-		for(Department d:departments){
-			if(d.getDeptId() == id){
-				break;
-			}
-			count++;
-		}
-		departments.remove(count);
+		departments.stream().filter(dept->dept.getDeptId()==id).collect(Collectors.toList()).forEach(each->departments.remove(each));
 	}
 }
