@@ -85,9 +85,9 @@ public class EmployeeServiceTest {
             assertFalse(dept.getLocationName()==null);
             assertFalse(dept.getLocationCountry()==null);
         });
-//        Location model equals method is overridden for content comparision. Hence different objs with same content are equal using
+//        Location model equals method is not overridden for content comparision. Hence different objs with same content are not equal using
 //        assertEquals
-        assertEquals(location3,location4);
+        assertNotEquals(location3,location4);
         assertNotSame(location3,location4);
 
 //        DEPARTMENTS TESTING
@@ -105,9 +105,9 @@ public class EmployeeServiceTest {
                 assertFalse(dept.getDeptName()==null);
                 assertFalse(dept.getLocation()==null);
         });
-//        Department model equals method is overridden for content comparision. Hence different objs with same content are equal using
+//        Department model equals method is overridden not for content comparision. Hence different objs with same content are not equal using
 //        assertEquals
-        assertEquals(department3,department4);
+        assertNotEquals(department3,department4);
         assertNotSame(department3,department4);
 
 //        EMPLOYEE TESTING
