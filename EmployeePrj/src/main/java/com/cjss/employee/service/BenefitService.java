@@ -8,12 +8,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class BenefitService {
+public class BenefitService
+{
 	private List<Benefit> benefits = new ArrayList<>();
 	public static void main(String[] args) {
 	}
 	public void addBenefit(Benefit benefit) {
-		benefits.add(new Benefit(benefit.getBenefitId(),benefit.getBenefitName(),benefit.getDescription()));
+		benefits.add(benefit);
 	}
 	public List<Benefit> getBenefits(){
 		return benefits;
