@@ -82,6 +82,7 @@ public class EmployeeControllerTest {
 //        For example when employeeController.addEmployee is called, check if "EmployeeController: addEmployee" gets printed in output
 //        mockito provides dummy implementations to mocked objects(@Mock) which means even if services are not mocked using when,no error will be thrown and the methods return null
         when(employeeService.getEmployees()).thenReturn(emp);
+        when(employeeService.getEmployeesByCountry("India",locationService.getLocations())).thenReturn(emp);
         doNothing().when(employeeService).addEmployee(emp1);
         doNothing().when(employeeService).deleteEmployeeById(emp1.getemployeeId());
         when(benefitService.getBenefits()).thenReturn(benefits);
@@ -138,39 +139,5 @@ public class EmployeeControllerTest {
 
         assertEquals(employees.get(0).getemployeeId(),101);
         assertTrue(employees.size()==5);
-
-//        Employees from India
-        List<String> empFromIndia = employeeController.getIndiaEmployees();
-        System.out.println(empFromIndia);
-        assertTrue(empFromIndia.size()==5);
-        assertTrue(empFromIndia.get(0).split(" ")[0].trim().equals("101"));
-        assertTrue(empFromIndia.get(1).split(" ")[1].equals("John"));
-        assertTrue(empFromIndia.get(2).split(" ")[2].equals("India"));
-//        Employees from Chennai or Hyderabad
-        List<String> empFromChennaiHyd = employeeController.getChennaiHydEmployees();
-        System.out.println(empFromChennaiHyd);
-        assertTrue(empFromChennaiHyd.size()==4);
-        assertTrue(empFromChennaiHyd.get(0).split(" ")[0].trim().equals("101"));
-        assertTrue(empFromChennaiHyd.get(1).split(" ")[1].equals("anu"));
-        assertTrue(empFromChennaiHyd.get(2).split(" ")[2].equals("Hyd"));
-//        Employees with benefits
-        List<String> empWithBenefits = employeeController.getEmployeesWithBenefits();
-        System.out.println(empWithBenefits);
-        assertTrue(empWithBenefits.size()==4);
-        assertTrue(empWithBenefits.get(0).split(" ")[2].trim().equals("travel"));
-        assertTrue(empWithBenefits.get(1).split(" ")[2].equals("travel"));
-        assertTrue(empWithBenefits.get(1).split(" ")[3].equals("food"));
-//        Employee details
-        List<String> employeeDetails = employeeController.getEmployeeDetails();
-        System.out.println(employeeDetails);
-        assertTrue(employeeDetails.size()==5);
-        assertTrue(employeeDetails.get(0).split(" ")[0].equals("101")); //ID of 1st employee
-        assertTrue(employeeDetails.get(1).split(" ")[4].equals("Bgl")); //Salary of 2nd employee
-        assertTrue(employeeDetails.get(2).split(" ")[2].equals("21213")); //LocationName of 3rd employee
-//        Chennai India Employees
-        List<String> chennaiIndiaEmployees = employeeController.getChennaiIndiaEmployees();
-        System.out.println(chennaiIndiaEmployees);
-        assertTrue(chennaiIndiaEmployees.size()==1);
-        assertTrue(chennaiIndiaEmployees.get(0).split(" ")[2].equals("Chennai")); //ID of 1st employee
     }
 }

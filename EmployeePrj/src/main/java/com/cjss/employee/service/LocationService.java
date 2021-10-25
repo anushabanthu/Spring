@@ -1,8 +1,6 @@
 package com.cjss.employee.service;
-
 import com.cjss.employee.model.Location;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,8 +9,6 @@ import java.util.stream.Collectors;
 @Service
 public class LocationService {
 	private List<Location> locations = new ArrayList<>();
-	public static void main(String[] args) {
-	}
 	public void addLocations(Location location) {
 		locations.add(location);
 	}
@@ -22,7 +18,6 @@ public class LocationService {
 	public void deleteLocationById(int id){
 		locations.stream().filter(loc->loc.getLocationId()==id).collect(Collectors.toList()).forEach(each->locations.remove(each));
 	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -30,7 +25,6 @@ public class LocationService {
 		LocationService that = (LocationService) o;
 		return Objects.equals(locations, that.locations);
 	}
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(locations);

@@ -1,8 +1,6 @@
 package com.cjss.employee.service;
-
 import com.cjss.employee.model.Department;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +20,6 @@ public class DepartmentService {
 	public void deleteDepartmentById(int id){
 		departments.stream().filter(dept->dept.getDeptId()==id).collect(Collectors.toList()).forEach(each->departments.remove(each));
 	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -30,7 +27,6 @@ public class DepartmentService {
 		DepartmentService that = (DepartmentService) o;
 		return Objects.equals(departments, that.departments);
 	}
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(departments);

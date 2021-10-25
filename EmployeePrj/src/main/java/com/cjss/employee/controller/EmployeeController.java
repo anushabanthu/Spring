@@ -1,12 +1,3 @@
-/*
-Description: Contains methods to
-    ->  get/add/delete location details,benefits,employees
-    ->  get employee from India location
-    ->  get employees from Chennai or Hyderabad
-    ->  get employee with benefit details
-    ->  get employee details
-    ->  get employees from Chennai and India
- */
 package com.cjss.employee.controller;
 import com.cjss.employee.service.EmployeeService;
 import com.cjss.employee.service.BenefitService;
@@ -19,7 +10,6 @@ import com.cjss.employee.model.Department;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -65,7 +55,7 @@ public class EmployeeController {
         System.out.println("EmployeeController: deleteLocation");
         locationService.deleteLocationById(id);
     }
-    //    Departments
+//    Departments
     @GetMapping("/get-departments")
     public List<Department> getDepartments(){
         System.out.println("EmployeeController: getDepartments");
@@ -97,72 +87,25 @@ public class EmployeeController {
         System.out.println("EmployeeController: deleteEmployee");
         employeeService.deleteEmployeeById(id);
     }
-
-//    Task1: Get all India Employees
-    @GetMapping("/get-india-employees")
-    public List<String> getIndiaEmployees(){
-        System.out.println("EmployeeController: getIndiaEmployees");
-        List<String> indiaEmp = new ArrayList<>();
-        employeeService.getEmployees().forEach(employee->{
-            locationService.getLocations().stream().filter((location->location.getLocationId()==employee.getLocationId() && location.getLocationCountry()=="India")).forEach(required->indiaEmp.add(employee.getemployeeId()+" "+employee.getEmployeeName()+" "+required.getLocationCountry()));
-        });
-        return indiaEmp;
+    @PostMapping("/get-employees-by-country")
+    public List<Employee> getEmployeesByCountry(String country){
+        return employeeService.getEmployeesByCountry(country,locationService.getLocations());
     }
-
-//   	Task2 -> Retrieve employees who are in Chennai or Hyderabad
-        @GetMapping("/get-chennai-hyd-employees")
-        public List<String> getChennaiHydEmployees() {
-            System.out.println("EmployeeController: getChennaiHydEmployees");
-            List<String> ChennaiHydEmployees =  new ArrayList<>();
-            employeeService.getEmployees().forEach(employee -> {
-                locationService.getLocations().stream().filter(location -> location.getLocationId() == employee.getLocationId()).
-                        filter((locationRequired -> locationRequired.getLocationName() == "Chennai" || locationRequired.getLocationName() == "Hyd")).
-                        forEach(required -> ChennaiHydEmployees.add(employee.getemployeeId() + " " + employee.getEmployeeName() + " " + required.getLocationName()));
-            });
-            return ChennaiHydEmployees;
-        }
-
-//      Task3 -> Retrieve employees who have Benefits and display benefits details
-        @GetMapping("/get-employees-with-benefits")
-        public List<String> getEmployeesWithBenefits(){
-            System.out.println("EmployeeController: getEmployeesWithBenefits");
-            List<String> empBenefitDetails =  new ArrayList<>();
-            employeeService.getEmployees().stream().filter(employee->!employee.getBenefitIds().isEmpty()).forEach(withBenefits->{
-                StringBuffer str=new StringBuffer();
-                withBenefits.getBenefitIds().forEach(benefitId->{
-                    benefitService.getBenefits().stream().filter(benefit->benefitId==benefit.getBenefitId()).forEach(required->str.append(required.getBenefitName()+" "));
-                });
-                empBenefitDetails.add(String.valueOf(withBenefits.getemployeeId())+" "+withBenefits.getEmployeeName()+" "+str.toString());
-            });
-            return empBenefitDetails;
-        }
-
-//        Task4 -> Retrieve employee details -  employeeId, employeeName, Salary, deptName, locationName, locationCountry
-    @GetMapping("/get-employee-details")
-    public List<String> getEmployeeDetails() {
-        System.out.println("EmployeeController: getEmployeeDetails");
-        List<String> empDetails = new ArrayList<>();
-        StringBuffer str = new StringBuffer();
-        employeeService.getEmployees().forEach(employee -> {
-            str.delete(0,str.length());
-            str.append(employee.getemployeeId() + " " + employee.getEmployeeName() + " " + employee.getSalary() + " ");
-            departmentService.getDepartments().stream().filter(dept -> dept.getDeptId() == employee.getDeptId()).forEach(deptsRequired -> str.append(deptsRequired.getDeptName()));
-            locationService.getLocations().stream().filter(location -> location.getLocationId() == employee.getLocationId()).forEach(required -> empDetails.add(str+" "+required.getLocationName() + " " + required.getLocationCountry()));
-        });
-        return empDetails;
+    @PostMapping("/get-employees-by-cities")
+    public List<Employee> getEmployeesByCities(@RequestBody String[] cities){
+        return employeeService.getEmployeesByCities(cities,locationService.getLocations());
     }
-
-//    Task5 -> Retrieve employees who are in Chennai and India
-    @GetMapping("/get-chennai-india-employees")
-    public List<String> getChennaiIndiaEmployees() {
-        System.out.println("EmployeeController: getChennaiIndiaEmployees");
-        List<String> chennaiIndiaEmployees = new ArrayList<>();
-        employeeService.getEmployees().forEach(employee -> {
-            locationService.getLocations().stream().filter(location -> location.getLocationCountry() == "India").filter(indiaCountry -> indiaCountry.getLocationName() == "Chennai").
-                    filter(chennaiLocation -> chennaiLocation.getLocationId() == employee.getLocationId()).
-                    forEach(required -> chennaiIndiaEmployees.add(employee.getemployeeId() + " " + employee.getEmployeeName() + " " + required.getLocationName() + " " + required.getLocationCountry()));
-        });
-        return chennaiIndiaEmployees;
+    @GetMapping("/get-employees-with-benefits")
+    public List<Employee> getEmployeesWithBenefits(){
+        return employeeService.getEmployeesWithBenefits(benefitService.getBenefits());
+    }
+    @GetMapping("/get-employees-details")
+    public List<String> getEmployeeDetails(){
+        return employeeService.getEmployeeDetails(departmentService.getDepartments(),locationService.getLocations());
+    }
+    @PostMapping("/get-employees-by-city-and-country")
+    public List<Employee> getEmployeesByCityAndCountry(String city, String country){
+        return employeeService.getEmployeesByCityAndCountry(city,country,locationService.getLocations());
     }
 }
 

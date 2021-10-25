@@ -11,6 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -29,11 +30,12 @@ public class EmployeeServiceTest {
     @Test
     public void testGetEmployeeByDesignation() {
 
-        Employee emp1 = new Employee(101 , "Rama", 10000,1,1, Arrays.asList(1));
-        Employee emp2 = new Employee(102 , "",10000,2,1,Arrays.asList(1,2));
+        Employee emp1 = new Employee(101 , "Rama", 10000,2,1, Arrays.asList(1));
+        Employee emp2 = new Employee(102 , "",10000,4,1,Arrays.asList(1,2));
         Employee emp3 = new Employee(103 , "anu", 21213,1,2,Arrays.asList());
         Employee emp4 = new Employee(103 , "anu", 21213,1,2,Arrays.asList());
         Employee emp5 = emp1;
+        Employee emp6 = new Employee(104 , "anu", 21213,5,2,Arrays.asList());
 
         Benefit benefit1 = new Benefit(1,"travel","free");
         Benefit benefit2 = new Benefit(2,"food","free");
@@ -44,13 +46,15 @@ public class EmployeeServiceTest {
         Location location2 = new Location(2,"Bgl","India");
         Location location3 = new Location(3,"Chennai","India");
         Location location4 = new Location(3,"Chennai","India");
+        Location location5 = new Location(4,"London","UK");
+        Location location6 = new Location(5,"Hyd","ABC");
 
         Department department1 = new Department(1,"it","Hyd");
         Department department2 = new Department(2,"finance","hyd");
         Department department3 = new Department(3,"rnd","bgl");
         Department department4 = new Department(3,"rnd","bgl");
 
-////        BENEFITS TESTING
+//        BENEFITS TESTING
         assertTrue(benefitService.getBenefits().size()==0);
         benefitService.addBenefit(benefit1);
         assertTrue(benefitService.getBenefits().size()==1);
@@ -60,6 +64,7 @@ public class EmployeeServiceTest {
         assertFalse(benefitService.getBenefits().get(0).getDescription()=="no");
         benefitService.addBenefit(benefit2);
         benefitService.addBenefit(benefit3);
+        benefitService.addBenefit(benefit4);
         benefitService.getBenefits().forEach(benefit->{
             assertFalse(benefit.getBenefitId()==0);
             assertFalse(benefit.getBenefitName()==null);
@@ -80,10 +85,13 @@ public class EmployeeServiceTest {
         assertFalse(locationService.getLocations().get(0).getLocationCountry()=="hi");
         locationService.addLocations(location2);
         locationService.addLocations(location3);
-        locationService.getLocations().forEach(dept->{
-            assertFalse(dept.getLocationId()==0);
-            assertFalse(dept.getLocationName()==null);
-            assertFalse(dept.getLocationCountry()==null);
+        locationService.addLocations(location4);
+        locationService.addLocations(location5);
+        locationService.addLocations(location6);
+        locationService.getLocations().forEach(loc->{
+            assertFalse(loc.getLocationId()==0);
+            assertFalse(loc.getLocationName()==null);
+            assertFalse(loc.getLocationCountry()==null);
         });
 //        Location model equals method is not overridden for content comparision. Hence different objs with same content are not equal using
 //        assertEquals
@@ -100,6 +108,7 @@ public class EmployeeServiceTest {
         assertFalse(departmentService.getDepartments().get(0).getLocation()=="hi");
         departmentService.addDepartment(department2);
         departmentService.addDepartment(department3);
+        departmentService.addDepartment(department4);
         departmentService.getDepartments().forEach(dept->{
                 assertFalse(dept.getDeptId()==0);
                 assertFalse(dept.getDeptName()==null);
@@ -116,6 +125,7 @@ public class EmployeeServiceTest {
         employeeService.addEmployee(emp3);
         employeeService.addEmployee(emp4);
         employeeService.addEmployee(emp5);
+        employeeService.addEmployee(emp6);
         List<Employee> employees = employeeService.getEmployees();
 //      Since equals method is not overridden by Employee model for content comparison, assertEquals compare object references only.
 //      Hence assertEquals and assertSame behave the same way.
@@ -129,20 +139,55 @@ public class EmployeeServiceTest {
         assertNotNull(employees);
         employeeService.deleteEmployeeById(-1); //Since delete is not returning any value,cant test with assert
 
+//        EMPLOYEES BY COUNTRY
+        List<Employee> indiaEmployees = employeeService.getEmployeesByCountry("India",locationService.getLocations());
+        assertEquals(indiaEmployees.get(0),emp1);
+        assertEquals(indiaEmployees.get(1),emp3);
+        assertEquals(indiaEmployees.get(2),emp4);
+        assertEquals(indiaEmployees.get(3),emp5);
+        assertEquals(indiaEmployees.size(),4);
+//        EMPLOYEES BY MULTIPLE CITIES
+        List<Employee> empByCities = employeeService.getEmployeesByCities(new String[]{"London","Bgl"},locationService.getLocations());
+        assertEquals(empByCities.get(0),emp1);
+        assertEquals(empByCities.get(1),emp2);
+        assertEquals(empByCities.get(2),emp5);
+        assertEquals(empByCities.size(),3);
+//        EMPLOYEES WITH BENEFITS
+        List<Employee> empWithBenefits = employeeService.getEmployeesWithBenefits(benefitService.getBenefits());
+        assertEquals(empByCities.get(0),emp1);
+        assertEquals(empByCities.get(1),emp2);
+        assertEquals(empByCities.get(2),emp5);
+        assertEquals(empByCities.size(),3);
+//        GET EMPLOYEES
+        List<String> empDetails = employeeService.getEmployeeDetails(departmentService.getDepartments(),locationService.getLocations());
+        assertEquals(Arrays.stream(empDetails.get(0).split(" ")).collect(Collectors.toList()).get(5), "India");
+        assertEquals(Arrays.stream(empDetails.get(1).split(" ")).collect(Collectors.toList()).get(2), "10000");
+        assertEquals(Arrays.stream(empDetails.get(3).split(" ")).collect(Collectors.toList()).get(3), "finance");
+        assertEquals(Arrays.stream(empDetails.get(0).split(" ")).count(),6);
+        assertEquals(empDetails.size(),6);
+//        EMPLOYEES BY CITY AND COUNTRY
+        List<Employee> empByCityAndCountry = employeeService.getEmployeesByCityAndCountry("Hyd","India",locationService.getLocations());
+        assertEquals(empByCityAndCountry.size(),2);
+        assertEquals(empByCityAndCountry.get(0),emp3);
+        assertEquals(empByCityAndCountry.get(1),emp4);
+        empByCityAndCountry = employeeService.getEmployeesByCityAndCountry("Hyd","ABC",locationService.getLocations());
+        assertEquals(empByCityAndCountry.size(),1);
+        assertEquals(empByCityAndCountry.get(0),emp6);
+
 //        DELETE FUNCTIONALITY TESTING
         employeeService.deleteEmployeeById(102);
         assertNull(employeeService.getEmployeeById(102));
-        assertTrue(benefitService.getBenefits().size()==3);
+        assertTrue(benefitService.getBenefits().size()==4);
         benefitService.deleteBenefitById(2);
-        assertTrue(benefitService.getBenefits().size()==2);
+        assertTrue(benefitService.getBenefits().size()==3);
         benefitService.getBenefits().forEach(benefit->assertFalse(benefit.getBenefitId()==2));
-        assertTrue(locationService.getLocations().size()==3);
+        assertTrue(locationService.getLocations().size()==6);
         locationService.deleteLocationById(2);
-        assertTrue(locationService.getLocations().size()==2);
+        assertTrue(locationService.getLocations().size()==5);
         locationService.getLocations().forEach(loc->assertFalse(loc.getLocationId()==2));
-        assertTrue(departmentService.getDepartments().size()==3);
+        assertTrue(departmentService.getDepartments().size()==4);
         departmentService.deleteDepartmentById(2);
-        assertTrue(departmentService.getDepartments().size()==2);
+        assertTrue(departmentService.getDepartments().size()==3);
         departmentService.getDepartments().forEach(dept->assertFalse(dept.getDeptId()==2));
     }
 }
