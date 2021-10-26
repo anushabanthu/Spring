@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -78,11 +77,12 @@ public class EmployeeControllerTest {
         departments.add(department3);
 
         // Given
-//        EmployeeService calls inside controller class get mocked with the below implementation.Hence we need to verify if the print statements in controller methods are executed.
-//        For example when employeeController.addEmployee is called, check if "EmployeeController: addEmployee" gets printed in output
-//        mockito provides dummy implementations to mocked objects(@Mock) which means even if services are not mocked using when,no error will be thrown and the methods return null
+        when(employeeService.getEmployeesByCountry("India",locations)).thenReturn(emp);
+        when(employeeService.getEmployeesByCities(new String[]{"Hyd","Chennai"},locations)).thenReturn(Arrays.asList(emp2,emp3));
+        when(employeeService.getEmployeesWithBenefits(benefits)).thenReturn(Arrays.asList(emp1,emp2,emp3,emp5));
+        when(employeeService.getEmployeeDetails(departments,locations)).thenReturn(Arrays.asList("a","b","c"));
+        when(employeeService.getEmployeesByCityAndCountry("Hyd","India",locations)).thenReturn(Arrays.asList(emp1,emp3,emp4));
         when(employeeService.getEmployees()).thenReturn(emp);
-        when(employeeService.getEmployeesByCountry("India",locationService.getLocations())).thenReturn(emp);
         doNothing().when(employeeService).addEmployee(emp1);
         doNothing().when(employeeService).deleteEmployeeById(emp1.getemployeeId());
         when(benefitService.getBenefits()).thenReturn(benefits);
@@ -96,48 +96,85 @@ public class EmployeeControllerTest {
         doNothing().when(departmentService).deleteDepartmentById(department1.getDeptId());
 
         // When
+        List<Employee> empFromIndia = employeeController.getEmployeesByCountry("India",locations);
+        List<Employee> empByCities = employeeController.getEmployeesByCities(new String[]{"Hyd","Chennai"},locations);
+        List<Employee> empWithBenefits = employeeController.getEmployeesWithBenefits(benefits);
+        List<String> empDetails = employeeController.getEmployeeDetails(departments,locations);
+        List<Employee> empFromCityCountry = employeeController.getEmployeesByCityAndCountry("Hyd","India",locations);
+
         employeeController.addEmployee(emp1);
-        List<Employee> employees = employeeController.getEmployees();
-        System.out.println("Employees list:");
-        employees.forEach(employee->System.out.println(employee.getemployeeId()+" "+employee.getEmployeeName()
-        +" "+employee.getSalary()+" "+employee.getLocationId()+" "+employee.getBenefitIds()+" "+employee.getDeptId()));
+        List<Employee> allEmployees = employeeController.getEmployees();
         employeeController.deleteEmployee(emp1.getemployeeId());
 
         employeeController.addBenefit(benefit1);
-        List<Benefit> getBenefits = employeeController.getBenefits();
-        System.out.println("Benefits list:");
-        getBenefits.forEach(benefit->System.out.println(benefit.getBenefitId()+" "+benefit.getBenefitName()+" "+benefit.getDescription()));
+        List<Benefit> allBenefits = employeeController.getBenefits();
         employeeController.deleteBenefit(benefit1.getBenefitId());
 
         employeeController.addLocation(location1);
-        List<Location> getLocations = employeeController.getLocations();
-        System.out.println("Locations list:");
-        getLocations.forEach(location->System.out.println(location.getLocationId()+" "+location.getLocationName()+" "+ location.getLocationCountry()));
+        List<Location> allLocations = employeeController.getLocations();
         employeeController.deleteLocation(location1.getLocationId());
 
         employeeController.addDepartment(department1);
-        List<Department> getDepartments = employeeController.getDepartments();
-        System.out.println("Departments list:");
-        departments.forEach(department->System.out.println(department.getDeptId()+" "+department.getDeptName()+" "+department.getLocation()));
+        List<Department> allDepartments = employeeController.getDepartments();
         employeeController.deleteDepartment(department1.getDeptId());
 
-        // Then
-        assertEquals(benefits.get(0).getBenefitId(),1);
-        assertEquals(benefits.get(1).getBenefitName(),"food");
-        assertEquals(benefits.get(2).getDescription(),"free");
-        assertTrue(benefits.size()==3);
+//        Then
+        assertEquals(empFromIndia.size(),5);
+        verify(employeeService).getEmployeesByCountry("India",locations);
+        verify(employeeService,times(1)).getEmployeesByCountry("India",locations);
+        assertEquals(empFromIndia.get(0),emp1);
+        assertEquals(empFromIndia.get(3),emp4);
 
-        assertEquals(locations.get(0).getLocationId(),1);
-        assertEquals(locations.get(1).getLocationName(),"Bgl");
-        assertEquals(locations.get(2).getLocationCountry(),"India");
-        assertTrue(locations.size()==3);
+        assertEquals(empByCities.size(),2);
+        verify(employeeService).getEmployeesByCities(new String[]{"Hyd","Chennai"},locations);
+        verify(employeeService,times(1)).getEmployeesByCountry("India",locations);
+        assertEquals(empByCities.get(0),emp2);
+        assertEquals(empByCities.get(1),emp3);
 
-        assertEquals(departments.get(0).getDeptId(),1);
-        assertEquals(departments.get(1).getDeptName(),"finance");
-        assertEquals(departments.get(2).getLocation(),"bgl");
-        assertTrue(departments.size()==3);
+        assertEquals(empWithBenefits.size(),4);
+        verify(employeeService).getEmployeesWithBenefits(benefits);
+        verify(employeeService,times(1)).getEmployeesWithBenefits(benefits);
+        assertEquals(empWithBenefits.get(0),emp1);
+        assertEquals(empWithBenefits.get(1),emp2);
+        assertEquals(empWithBenefits.get(2),emp3);
+        assertEquals(empWithBenefits.get(3),emp5);
 
-        assertEquals(employees.get(0).getemployeeId(),101);
-        assertTrue(employees.size()==5);
+        assertEquals(empDetails.size(),3);
+        verify(employeeService).getEmployeeDetails(departments,locations);
+        verify(employeeService,times(1)).getEmployeeDetails(departments,locations);
+        assertEquals(empDetails.get(0),"a");
+        assertEquals(empDetails.get(1),"b");
+        assertEquals(empDetails.get(2),"c");
+
+        assertEquals(empFromCityCountry.size(),3);
+        verify(employeeService).getEmployeesByCityAndCountry("Hyd","India",locations);
+        verify(employeeService,times(1)).getEmployeesByCityAndCountry("Hyd","India",locations);
+        assertEquals(empFromCityCountry.get(0),emp1);
+        assertEquals(empFromCityCountry.get(1),emp3);
+        assertEquals(empFromCityCountry.get(2),emp4);
+
+        assertEquals(allEmployees.size(),5);
+        verify(employeeService).getEmployees();
+        verify(employeeService,times(1)).getEmployees();
+        assertEquals(allEmployees.get(0),emp1);
+        assertEquals(allEmployees.get(3),emp4);
+
+        assertEquals(allBenefits.size(),3);
+        verify(benefitService).getBenefits();
+        verify(benefitService,times(1)).getBenefits();
+        assertEquals(allBenefits.get(0),benefit1);
+        assertEquals(allBenefits.get(2),benefit3);
+
+        assertEquals(allLocations.size(),3);
+        verify(locationService).getLocations();
+        verify(locationService,times(1)).getLocations();
+        assertEquals(allLocations.get(0),location1);
+        assertEquals(allLocations.get(2),location3);
+
+        assertEquals(allDepartments.size(),3);
+        verify(departmentService).getDepartments();
+        verify(departmentService,times(1)).getDepartments();
+        assertEquals(allDepartments.get(0),department1);
+        assertEquals(allDepartments.get(2),department3);
     }
 }

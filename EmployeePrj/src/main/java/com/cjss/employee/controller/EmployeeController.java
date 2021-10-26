@@ -88,24 +88,24 @@ public class EmployeeController {
         employeeService.deleteEmployeeById(id);
     }
     @PostMapping("/get-employees-by-country")
-    public List<Employee> getEmployeesByCountry(String country){
-        return employeeService.getEmployeesByCountry(country,locationService.getLocations());
+    public List<Employee> getEmployeesByCountry(String country,@RequestBody List<Location> locations){
+        return employeeService.getEmployeesByCountry(country,locations);
     }
     @PostMapping("/get-employees-by-cities")
-    public List<Employee> getEmployeesByCities(@RequestBody String[] cities){
-        return employeeService.getEmployeesByCities(cities,locationService.getLocations());
+    public List<Employee> getEmployeesByCities(@RequestBody String[] cities,@RequestBody List<Location> locations){
+        return employeeService.getEmployeesByCities(cities,locations);
     }
     @GetMapping("/get-employees-with-benefits")
-    public List<Employee> getEmployeesWithBenefits(){
-        return employeeService.getEmployeesWithBenefits(benefitService.getBenefits());
+    public List<Employee> getEmployeesWithBenefits(@RequestBody List<Benefit> benefits){
+        return employeeService.getEmployeesWithBenefits(benefits);
     }
     @GetMapping("/get-employees-details")
-    public List<String> getEmployeeDetails(){
-        return employeeService.getEmployeeDetails(departmentService.getDepartments(),locationService.getLocations());
+    public List<String> getEmployeeDetails(@RequestBody List<Department> departments,@RequestBody List<Location> locations){
+        return employeeService.getEmployeeDetails(departments,locations);
     }
     @PostMapping("/get-employees-by-city-and-country")
-    public List<Employee> getEmployeesByCityAndCountry(String city, String country){
-        return employeeService.getEmployeesByCityAndCountry(city,country,locationService.getLocations());
+    public List<Employee> getEmployeesByCityAndCountry(String city, String country,@RequestBody List<Location> locations){
+        return employeeService.getEmployeesByCityAndCountry(city,country,locations);
     }
 }
 
