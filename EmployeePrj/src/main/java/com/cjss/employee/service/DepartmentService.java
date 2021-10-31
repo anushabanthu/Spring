@@ -1,34 +1,36 @@
 package com.cjss.employee.service;
+import com.cjss.employee.entity.DepartmentEntity;
 import com.cjss.employee.model.Department;
+import com.cjss.employee.repository.DepartmentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+
+import java.util.Optional;
 
 @Service
 public class DepartmentService {
-	private List<Department> departments = new ArrayList<>();
-	public static void main(String[] args) {
+	@Autowired
+	private DepartmentRepository departmentRepository;
+
+	public Department getDeptDetailsById(Integer id){
+		Optional<DepartmentEntity> departmentEntity = departmentRepository.findById(id);    //findById is available by default from JPARepository
+
+		Department department = new Department();
+		department.setDeptId(departmentEntity.get().getDeptId());
+		department.setDeptName(departmentEntity.get().getDeptName());
+		department.setLocation(departmentEntity.get().getLocation());
+		return department;
 	}
-	public void addDepartment(Department department) {
-		departments.add(department);
+
+	public DepartmentEntity addDeptDetails(Department department){
+		DepartmentEntity departmentEntity = new DepartmentEntity();
+
+		departmentEntity.setDeptName(department.getDeptName());
+		departmentEntity.setLocation(department.getLocation());
+		return departmentRepository.save(departmentEntity);
 	}
-	public List<Department> getDepartments(){
-		return departments;
-	}
-	public void deleteDepartmentById(int id){
-		departments.stream().filter(dept->dept.getDeptId()==id).collect(Collectors.toList()).forEach(each->departments.remove(each));
-	}
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		DepartmentService that = (DepartmentService) o;
-		return Objects.equals(departments, that.departments);
-	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(departments);
+
+	public void deleteDepartmentById(Integer id){
+		departmentRepository.deleteById(id);
 	}
 }

@@ -4,11 +4,7 @@ public class Location {
 	private int locationId;
 	private String locationName;
 	private String locationCountry;
-	public Location(int locationId,String locationName,String locationCountry ) {
-		this.locationId = locationId;
-		this.locationName = locationName;
-		this.locationCountry = locationCountry; 
-	}
+
 	public int getLocationId() {
 		return locationId;
 	}

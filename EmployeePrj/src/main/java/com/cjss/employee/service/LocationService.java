@@ -1,32 +1,34 @@
 package com.cjss.employee.service;
+import com.cjss.employee.entity.LocationEntity;
 import com.cjss.employee.model.Location;
+import com.cjss.employee.repository.LocationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class LocationService {
-	private List<Location> locations = new ArrayList<>();
-	public void addLocations(Location location) {
-		locations.add(location);
+	@Autowired
+	private LocationRepository locationRepository;
+
+	public Location getLocDetailsById(Integer id){
+		Optional<LocationEntity> locationEntity = locationRepository.findById(id);    //findById is available by default from JPARepository
+		Location location = new Location();
+
+		location.setLocationId(locationEntity.get().getLocationId());
+		location.setLocationName(locationEntity.get().getLocationName());
+		location.setLocationCountry(locationEntity.get().getLocationCountry());
+		return location;
 	}
-	public List<Location> getLocations(){
-		return locations;
+
+	public LocationEntity addLocDetails(Location location){
+		LocationEntity locationEntity = new LocationEntity();
+		locationEntity.setLocationName(location.getLocationName());
+		locationEntity.setLocationCountry(location.getLocationCountry());
+		return locationRepository.save(locationEntity);
 	}
-	public void deleteLocationById(int id){
-		locations.stream().filter(loc->loc.getLocationId()==id).collect(Collectors.toList()).forEach(each->locations.remove(each));
-	}
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		LocationService that = (LocationService) o;
-		return Objects.equals(locations, that.locations);
-	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(locations);
+
+	public void deleteLocationById(Integer id){
+		locationRepository.deleteById(id);
 	}
 }
