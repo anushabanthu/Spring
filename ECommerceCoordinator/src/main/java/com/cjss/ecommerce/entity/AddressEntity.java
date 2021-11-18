@@ -26,13 +26,16 @@ public class AddressEntity {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"addressEntityList","hibernateLazyInitializer", "handler"})
     private RegisterCustomerEntity registerCustomerEntity;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"productQuantityList","addressEntityList","hibernateLazyInitializer", "handler"})
+    private OrderEntity orderEntity;
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId(String email) {
+        this.id = email;
     }
 
     public String getLine1() {

@@ -13,8 +13,8 @@ public class StockController {
     StockService stockService;
 
     @PostMapping("/add-stock")
-    public ResponseEntity addSKUStockDetailsById(Integer id){
-        return stockService.addSKUStockDetailsById(id);
+    public ResponseEntity addSKUStockDetailsById(Integer skuId, Integer stock){
+        return stockService.addSKUStockDetailsById(skuId,stock);
     }
     @PostMapping("/get-stock-details-by-id")
     public ResponseEntity getSKUStockDetailsById(Integer id){

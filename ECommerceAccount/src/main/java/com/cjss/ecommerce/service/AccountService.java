@@ -2,6 +2,7 @@ package com.cjss.ecommerce.service;
 
 import com.cjss.ecommerce.entity.*;
 import com.cjss.ecommerce.model.*;
+import com.cjss.ecommerce.repository.AddressRepository;
 import com.cjss.ecommerce.repository.RegisterCustomerRepository;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 public class AccountService {
 	@Autowired
 	private RegisterCustomerRepository customerRepository;
+	@Autowired
+	private AddressRepository addressRepository;
 
 	Token token ;
 	PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
@@ -35,8 +38,7 @@ public class AccountService {
 				List<Address> addresses = new ArrayList<>();
 				customerEntity.get().getAddressEntityList().forEach(dbAddress -> {
 					Address address = new Address();
-					address.setEmail(dbAddress.getEmail());
-//					address.setEmail(dbAddress.getEmail().split("_")[0]);
+					address.setId(dbAddress.getId());
 					address.setLine1(dbAddress.getLine1());
 					address.setLine2(dbAddress.getLine2());
 					address.setCity(dbAddress.getCity());
@@ -53,9 +55,29 @@ public class AccountService {
 				customer.setPassword(customerEntity.get().getPassword());
 
 				customer.setAddresses(addresses);
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(customer);
+				return ResponseEntity.status(HttpStatus.OK).body(customer);
 			}
 			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with given id doesnt exists (CODE 400)\n");
+		}
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login expired. Please login again to continue (CODE 401)\n");
+	}
+
+	public ResponseEntity getAddressDetailsById(String id){
+		Address address = new Address();
+		if(token!=null && token.getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
+			if(addressRepository.existsById(id)) {
+				Optional<AddressEntity> addressEntity = addressRepository.findById(id);
+				address.setBillingAddress(addressEntity.get().getBillingAddress());
+				address.setShippingAddress(addressEntity.get().getShippingAddress());
+				address.setId(addressEntity.get().getId());
+				address.setLine1(addressEntity.get().getLine1());
+				address.setLine2(addressEntity.get().getLine2());
+				address.setState(addressEntity.get().getState());
+				address.setPostalCode(addressEntity.get().getPostalCode());
+				address.setCity(addressEntity.get().getCity());
+				return ResponseEntity.status(HttpStatus.OK).body(address);
+			}
+			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Address with given id doesnt exists (CODE 400)\n");
 		}
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login expired. Please login again to continue (CODE 401)\n");
 	}
@@ -80,7 +102,7 @@ public class AccountService {
 
 			customer.getAddresses().forEach(address -> {
 				AddressEntity addressEntity = new AddressEntity();
-				addressEntity.setEmail(customer.getEmail() + "_" + UUID.randomUUID().toString());
+				addressEntity.setId(customer.getEmail() + "_" + UUID.randomUUID().toString());
 				addressEntity.setLine1(address.getLine1());
 				addressEntity.setLine2(address.getLine2());
 				addressEntity.setPostalCode(address.getPostalCode());
@@ -90,31 +112,24 @@ public class AccountService {
 				addressEntity.setBillingAddress(address.getBillingAddress());
 				addressEntity.setRegisterCustomerEntity(customerEntity);
 				addresses.add(addressEntity);
+//				System.out.println("email:"+addresses.get(0).getEmail());
+//				System.out.println("line1:"+addresses.get(0).getLine1());
 			});
 
 			customerEntity.setAddressEntityList(addresses);
 			RegisterCustomerEntity out = customerRepository.save(customerEntity);
-//			List<AddressEntity> addressEntity = new ArrayList<>();
-//			out.getAddressEntityList().forEach(customerAddress -> {
-//				AddressEntity address = new AddressEntity();
-//				address = customerAddress;
-//				address.setEmail(customerAddress.getEmail().split("_")[0]);
-//				addressEntity.add(address);
-//				out.setAddressEntityList(addressEntity);
-//
-//			});
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(out);
+			return ResponseEntity.status(HttpStatus.OK).body(out);
 		}
 		else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer with email:"+customer.getEmail() +" already exists (CODE 400)");
 	}
 
 	public ResponseEntity addAddressDetails(Address address){
 		if(token!=null && token.getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
-			if (customerRepository.existsById(address.getEmail())) {
-				RegisterCustomerEntity customerEntity = customerRepository.getById(address.getEmail());
+			if (customerRepository.existsById(address.getId())) {
+				RegisterCustomerEntity customerEntity = customerRepository.getById(address.getId());
 				List<AddressEntity> addresses = customerEntity.getAddressEntityList();
 				AddressEntity addressEntity = new AddressEntity();
-				addressEntity.setEmail(address.getEmail() + "_" + UUID.randomUUID().toString());
+				addressEntity.setId(address.getId() + "_" + UUID.randomUUID().toString());
 				addressEntity.setLine1(address.getLine1());
 				addressEntity.setLine2(address.getLine2());
 				addressEntity.setCity(address.getCity());
@@ -127,18 +142,9 @@ public class AccountService {
 				addresses.add(addressEntity);
 				customerEntity.setAddressEntityList(addresses);
 				RegisterCustomerEntity out = customerRepository.save(customerEntity);
-//				List<AddressEntity> addressEntityList = new ArrayList<>();
-//				out.getAddressEntityList().forEach(customerAddress -> {
-//					AddressEntity addressEntity1 = new AddressEntity();
-//					addressEntity1 = customerAddress;
-//					addressEntity1.setEmail(customerAddress.getEmail().split("_")[0]);
-//					addressEntityList.add(addressEntity1);
-//					out.setAddressEntityList(addressEntityList);
-//
-//				});
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(out);
+				return ResponseEntity.status(HttpStatus.OK).body(out);
 			}
-			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer with email:"+address.getEmail()+" doesnt exist (CODE 400)");
+			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer with email:"+address.getId()+" doesnt exist (CODE 400)");
 		}
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login expired. Please login again to continue (CODE 401)");
 	}
@@ -156,7 +162,7 @@ public class AccountService {
 							LocalDateTime tokenExpiryDateTime = LocalDateTime.now().plusMinutes(10);    // Current time + 20secs
 							tokenExpiryDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
 							token.setTokenExpiryDateTime(tokenExpiryDateTime);
-							return ResponseEntity.status(HttpStatus.ACCEPTED).body("User logged in successfully (CODE 202)\n");
+							return ResponseEntity.status(HttpStatus.OK).body("User logged in successfully (CODE 200)\n");
 						} else {
 							return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized (CODE 401)\n");
 						}

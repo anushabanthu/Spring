@@ -7,7 +7,7 @@ import com.cjss.ecommerce.model.RegisterCustomer;
 import com.cjss.ecommerce.model.Login;
 import com.cjss.ecommerce.model.Token;
 import com.cjss.ecommerce.repository.RegisterCustomerRepository;
-import com.cjss.ecommerce.service.AccountService;
+import com.cjss.ecommerce.service.CoordinatorService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 public class AccountServiceTest     {
 
     @InjectMocks
-    private AccountService accountService;
+    private CoordinatorService accountService;
     @InjectMocks
     private ProductService productService;
     @Mock

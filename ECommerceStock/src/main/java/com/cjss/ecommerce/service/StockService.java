@@ -16,28 +16,27 @@ public class StockService {
 	private StockRepository stockRepository;
 
 	public ResponseEntity getSKUStockDetailsById(Integer id){
-//		TODO: check if sku exists in db
 			if(stockRepository.existsById(id)) {
-				Optional<StockEntity> stockEntity = stockRepository.findById(id);    //findById is available by default from JPARepository
+				StockEntity stockEntity = stockRepository.getById(id);    //findById is available by default from JPARepository
 				Stock stock = new Stock();
-				stock.setSkuCode(stockEntity.get().getSkuCode());
-				stock.setQuantityAvailable(stockEntity.get().getQuantityAvailable());
+				stock.setSkuCode(stockEntity.getSkuCode());
+				stock.setQuantityAvailable(stockEntity.getQuantityAvailable());
 
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(stock);
+				return ResponseEntity.status(HttpStatus.OK).body(stock);
 			}
 			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No stock available for product SKU with id:"+id+" (CODE 400)\n");
 	}
 
-	public ResponseEntity addSKUStockDetailsById(Integer id){
+	public ResponseEntity addSKUStockDetailsById(Integer skuId,Integer stock){
 		StockEntity stockEntity = new StockEntity();
-		if(stockRepository.existsById(id)) {
-			stockEntity = stockRepository.getById(id);    //findById is available by default from JPARepository
-			stockEntity.setQuantityAvailable(stockEntity.getQuantityAvailable()+1);
+		if(stockRepository.existsById(skuId)) {
+			stockEntity = stockRepository.getById(skuId);    //findById is available by default from JPARepository
+			stockEntity.setQuantityAvailable(stockEntity.getQuantityAvailable()+stock);
 		}
 		else {
-			stockEntity.setSkuCode(id);
-			stockEntity.setQuantityAvailable(1);
+			stockEntity.setSkuCode(skuId);
+			stockEntity.setQuantityAvailable(stock);
 		}
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(stockRepository.save(stockEntity));
+		return ResponseEntity.status(HttpStatus.OK).body(stockRepository.save(stockEntity));
 	}
 }

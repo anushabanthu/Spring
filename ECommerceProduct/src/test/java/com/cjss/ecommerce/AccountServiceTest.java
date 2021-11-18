@@ -76,7 +76,7 @@ public class AccountServiceTest     {
         when(token.getTokenExpiryDateTime()).thenReturn(LocalDateTime.now().plusSeconds(1));
 //        accountService.setEncryptorConfig();
 //        when(accountService.encryptor.decrypt(password)).thenReturn(password);
-//        when(accountServiceMock.loginUser(login)).thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED).body("User logged in successfully (CODE 202)\n-------"));
+//        when(accountServiceMock.loginUser(login)).thenReturn(ResponseEntity.status(HttpStatus.OK).body("User logged in successfully (CODE 200)\n-------"));
 //        accountService.token.setEmail(email);
 //        Token never expires
 //        accountService.token.setTokenExpiryDateTime(LocalDateTime.now().plusSeconds(1));
@@ -89,7 +89,7 @@ public class AccountServiceTest     {
 
 //        System.out.println("Login:"+accountService.loginUser(login));
 //        accountService.addAddressDetails(address);
-//        assertEquals(accountService.addAddressDetails(address).getStatusCode(),202);
+//        assertEquals(accountService.addAddressDetails(address).getStatusCode(),200);
     }
     public RegisterCustomer customerEntityToCustomer(RegisterCustomerEntity entity){
         RegisterCustomer customer = new RegisterCustomer();

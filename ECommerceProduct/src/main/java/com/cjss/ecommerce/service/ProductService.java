@@ -48,7 +48,7 @@ public class ProductService {
 					skus.add(productSku);
 				});
 				product.setProductSkus(skus);
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(product);
+				return ResponseEntity.status(HttpStatus.OK).body(product);
 			}
 			else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product with given id:"+id+" doesnt exists (CODE 400)\n");
 	}
@@ -65,7 +65,7 @@ public class ProductService {
 			price.setPrice(productSKUEntity.get().getPriceEntity().getPrice());
 			price.setCurrency(productSKUEntity.get().getPriceEntity().getCurrency());
 			productSku.setPrice(price);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(productSku);
+			return ResponseEntity.status(HttpStatus.OK).body(productSku);
 			}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product sku with given id:"+id+" doesnt exists (CODE 400)\n");
 	}
@@ -77,7 +77,7 @@ public class ProductService {
 			price.setPrice(priceEntity.get().getPrice());
 			price.setSkuCode(Integer.valueOf(priceEntity.get().getSkuCode()));
 			price.setCurrency(priceEntity.get().getCurrency());
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(price);
+			return ResponseEntity.status(HttpStatus.OK).body(price);
 		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Price details doesnt exists for product sku with id:"+id+" (CODE 400)\n");
 	}
@@ -93,15 +93,15 @@ public class ProductService {
 			productEntity.setDescription(product.getDescription());
 
 			if(product.getProductSkus()!=null) {
-				product.getProductSkus().forEach(sku -> {
+				product.getProductSkus().stream().filter(sku->sku.getProductCode().equals(product.getProductCode())).forEach(sku -> {
 					ProductSKUEntity productSKUEntity = new ProductSKUEntity();
 					PriceEntity priceEntity = new PriceEntity();
-					productSKUEntity.setProductCode(product.getProductCode());
+					productSKUEntity.setProductCode(sku.getProductCode());
 					productSKUEntity.setSkuCode(sku.getSkuCode());
 					productSKUEntity.setSize(sku.getSize());
 					productSKUEntity.setProductEntity(productEntity);
 
-					if(sku.getPrice()!=null) {
+					if(sku.getPrice()!=null && sku.getPrice().getSkuCode()==sku.getSkuCode()){
 						priceEntity.setSkuCode(sku.getPrice().getSkuCode());
 						priceEntity.setPrice(sku.getPrice().getPrice());
 						priceEntity.setCurrency(sku.getPrice().getCurrency());
@@ -112,7 +112,7 @@ public class ProductService {
 			}
 			productEntity.setProductSKUEntities(skus);
 			ProductEntity productFromDB = productRepository.save(productEntity);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(productFromDB);
+			return ResponseEntity.status(HttpStatus.OK).body(productFromDB);
 		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product with given id:"+product.getProductCode()+" already exists (CODE 400)\n");
 	}
@@ -142,7 +142,7 @@ public class ProductService {
 				}
 				skus.add(productSKUEntity);
 				product.setProductSKUEntities(skus);
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(productRepository.save(product));
+				return ResponseEntity.status(HttpStatus.OK).body(productRepository.save(product));
 			}
 		else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product with given id "+productSku.getProductCode()+" doesnt exist.Hence cant add productSKU details (CODE 400)\n");
 	}
@@ -171,7 +171,7 @@ public class ProductService {
 				productSKUEntity.setPriceEntity(priceEntity);
 				skus.add(productSKUEntity);
 				product.setProductSKUEntities(skus);
-				return ResponseEntity.status(HttpStatus.ACCEPTED).body(productRepository.save(product));
+				return ResponseEntity.status(HttpStatus.OK).body(productRepository.save(product));
 		}
 		else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product sku with given id:"+price.getSkuCode()+" doesnt exist.Hence cant add price details (CODE 400)\n");
 	}

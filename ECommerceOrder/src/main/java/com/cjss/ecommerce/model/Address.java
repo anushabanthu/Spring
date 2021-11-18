@@ -1,39 +1,15 @@
-package com.cjss.ecommerce.entity;
+package com.cjss.ecommerce.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
-@Entity
-@Table(name="address_entity")
-public class AddressEntity {
-    @Id
+public class Address {
     private String id;
-    @Column
     private String line1;
-    @Column
     private String line2;
-    @Column
     private Integer postalCode;
-    @Column
     private String state;
-    @Column
     private String city;
-    @Column
     private Boolean shippingAddress;
-    @Column
     private Boolean billingAddress;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties({"addressEntityList","hibernateLazyInitializer", "handler"})
-    private RegisterCustomerEntity registerCustomerEntity;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getLine1() {
         return line1;
@@ -91,11 +67,11 @@ public class AddressEntity {
         this.billingAddress = billingAddress;
     }
 
-    public RegisterCustomerEntity getRegisterCustomerEntity() {
-        return registerCustomerEntity;
+    public String getId() {
+        return id;
     }
 
-    public void setRegisterCustomerEntity(RegisterCustomerEntity registerCustomerEntity) {
-        this.registerCustomerEntity = registerCustomerEntity;
+    public void setId(String id) {
+        this.id = id;
     }
 }

@@ -23,16 +23,22 @@ public class AddressEntity {
     private Boolean shippingAddress;
     @Column
     private Boolean billingAddress;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties({"addressEntityList","hibernateLazyInitializer", "handler"})
-    private RegisterCustomerEntity registerCustomerEntity;
+//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JsonIgnoreProperties({"addressEntityList","hibernateLazyInitializer", "handler"})
+//    private RegisterCustomerEntity registerCustomerEntity;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JsonIgnoreProperties({"addressEntityList","hibernateLazyInitializer", "handler"})
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"productQuantityList","addressEntityList","hibernateLazyInitializer", "handler"})
+    private OrderEntity orderEntity;
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId(String email) {
+        this.id = email;
     }
 
     public String getLine1() {
@@ -91,11 +97,11 @@ public class AddressEntity {
         this.billingAddress = billingAddress;
     }
 
-    public RegisterCustomerEntity getRegisterCustomerEntity() {
-        return registerCustomerEntity;
+    public OrderEntity getOrderEntity() {
+        return orderEntity;
     }
 
-    public void setRegisterCustomerEntity(RegisterCustomerEntity registerCustomerEntity) {
-        this.registerCustomerEntity = registerCustomerEntity;
+    public void setOrderEntity(OrderEntity orderEntity) {
+        this.orderEntity = orderEntity;
     }
 }

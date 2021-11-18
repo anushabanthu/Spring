@@ -17,6 +17,9 @@ public class AccountController {
     @PostMapping("/get-customer-details-by-id")
     public ResponseEntity getCustomerDetailsById(String id){
         return accountService.getCustomerDetailsById(id);
+    }@PostMapping("/get-address-details-by-id")
+    public ResponseEntity getAddressDetailsById(String id){
+        return accountService.getAddressDetailsById(id);
     }
     @PostMapping("/register-customer")
     public ResponseEntity registerCustomer(@RequestBody RegisterCustomer customer){
