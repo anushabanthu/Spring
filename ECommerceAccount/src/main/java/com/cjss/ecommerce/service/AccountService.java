@@ -3,6 +3,7 @@ package com.cjss.ecommerce.service;
 import com.cjss.ecommerce.entity.*;
 import com.cjss.ecommerce.model.*;
 import com.cjss.ecommerce.repository.AddressRepository;
+import com.cjss.ecommerce.repository.LoginRepository;
 import com.cjss.ecommerce.repository.RegisterCustomerRepository;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
@@ -25,14 +26,15 @@ public class AccountService {
 	private RegisterCustomerRepository customerRepository;
 	@Autowired
 	private AddressRepository addressRepository;
+	@Autowired
+	private LoginRepository loginRepository;
 
-	Token token ;
 	PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
 	boolean encryptorCfgNotSet = true;
 
 	public ResponseEntity getCustomerDetailsById(String id){
 		RegisterCustomer customer = new RegisterCustomer();
-		if(token!=null && token.getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
+		if(loginRepository.existsById(id) && loginRepository.getById(id).getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
 			if(customerRepository.existsById(id)) {
 				Optional<RegisterCustomerEntity> customerEntity = customerRepository.findById(id);
 				List<Address> addresses = new ArrayList<>();
@@ -64,7 +66,7 @@ public class AccountService {
 
 	public ResponseEntity getAddressDetailsById(String id){
 		Address address = new Address();
-		if(token!=null && token.getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
+		if(loginRepository.existsById(id) && loginRepository.getById(id).getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
 			if(addressRepository.existsById(id)) {
 				Optional<AddressEntity> addressEntity = addressRepository.findById(id);
 				address.setBillingAddress(addressEntity.get().getBillingAddress());
@@ -112,8 +114,6 @@ public class AccountService {
 				addressEntity.setBillingAddress(address.getBillingAddress());
 				addressEntity.setRegisterCustomerEntity(customerEntity);
 				addresses.add(addressEntity);
-//				System.out.println("email:"+addresses.get(0).getEmail());
-//				System.out.println("line1:"+addresses.get(0).getLine1());
 			});
 
 			customerEntity.setAddressEntityList(addresses);
@@ -124,7 +124,7 @@ public class AccountService {
 	}
 
 	public ResponseEntity addAddressDetails(Address address){
-		if(token!=null && token.getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
+		if(loginRepository.existsById(address.getId()) && loginRepository.getById(address.getId()).getTokenExpiryDateTime().isAfter(LocalDateTime.now())) {
 			if (customerRepository.existsById(address.getId())) {
 				RegisterCustomerEntity customerEntity = customerRepository.getById(address.getId());
 				List<AddressEntity> addresses = customerEntity.getAddressEntityList();
@@ -152,16 +152,22 @@ public class AccountService {
 	public ResponseEntity loginUser(Login login) {
 		try {
 //			LoginCustomer only if user is not already logged in (user is never logged in/token expired)
-			if (token == null || token.getTokenExpiryDateTime().isBefore(LocalDateTime.now())) {
+			if (!loginRepository.existsById(login.getEmail()) || (loginRepository.existsById(login.getEmail()) && loginRepository.getById(login.getEmail()).getTokenExpiryDateTime().isBefore(LocalDateTime.now()))) {
 				if (customerRepository.existsById(login.getEmail())) {
 					List<RegisterCustomerEntity> entities = customerRepository.findAll().stream().filter(customer -> customer.getEmail().equals(login.getEmail())).collect(Collectors.toList());
 					if (entities.size() > 0) {
 						if (encryptor.decrypt(entities.get(0).getPassword()).equals(login.getPassword())) {
-							token = new Token();
+							System.out.println("login");
+							Token token = new Token();
 							token.setEmail(login.getEmail());
-							LocalDateTime tokenExpiryDateTime = LocalDateTime.now().plusMinutes(10);    // Current time + 20secs
+							LocalDateTime tokenExpiryDateTime = LocalDateTime.now().plusSeconds(20);    // Current time + 20secs
 							tokenExpiryDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
 							token.setTokenExpiryDateTime(tokenExpiryDateTime);
+							LoginEntity loginEntity = new LoginEntity();
+							loginEntity.setEmail(login.getEmail());
+							loginEntity.setPassword(login.getPassword());
+							loginEntity.setTokenExpiryDateTime(tokenExpiryDateTime);
+							loginRepository.save(loginEntity);
 							return ResponseEntity.status(HttpStatus.OK).body("User logged in successfully (CODE 200)\n");
 						} else {
 							return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized (CODE 401)\n");
@@ -175,7 +181,7 @@ public class AccountService {
 			}
 		}
 		catch(Exception e){
-			token = null;
+			login.setToken(null);
 		}
 		return null;
 	}
@@ -193,7 +199,8 @@ public class AccountService {
 		encryptor.setConfig(config);
 	}
 
-	public Integer getAddressesCountById(String id){
-		return customerRepository.getById(id).getAddressEntityList().size();
+	public ResponseEntity getTokenExpiryDateTime(String email){
+		if(loginRepository.existsById(email))	return ResponseEntity.status(HttpStatus.OK).body(loginRepository.getById(email).getTokenExpiryDateTime());
+		else return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with email:"+email+" is not logged in");
 	}
 }

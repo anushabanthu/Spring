@@ -7,12 +7,12 @@ import java.util.List;
 @Entity
 @Table(name="customer_entity")
 public class RegisterCustomerEntity {
+    @Id
+    private String email;
     @Column
     private String firstName;
     @Column
     private String lastName;
-    @Id
-    private String email;
     @Column
     private Long mobileNumber;
     @Column

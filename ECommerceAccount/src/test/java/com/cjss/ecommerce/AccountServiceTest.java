@@ -1,120 +1,84 @@
 package com.cjss.ecommerce;
 
-import com.cjss.ecommerce.entity.AddressEntity;
-import com.cjss.ecommerce.entity.RegisterCustomerEntity;
-import com.cjss.ecommerce.model.Address;
-import com.cjss.ecommerce.model.RegisterCustomer;
-import com.cjss.ecommerce.model.Login;
-import com.cjss.ecommerce.model.Token;
-import com.cjss.ecommerce.repository.RegisterCustomerRepository;
-import com.cjss.ecommerce.service.AccountService;
+import io.restassured.http.ContentType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
-
+import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AccountServiceTest     {
-
-    @InjectMocks
-    private AccountService accountService;
-    @InjectMocks
-    private ProductService productService;
-    @Mock
-    private RegisterCustomerRepository registerCustomerRepository;
-    @Mock
-    private Token token;
-
+public class AccountServiceTest {
     @Test
-    public void testAccountService() {
-        RegisterCustomerEntity customerEntity = new RegisterCustomerEntity();
-        RegisterCustomer customer = new RegisterCustomer();
-        Address address = new Address();
-        AddressEntity addressEntity = new AddressEntity();
-        List<AddressEntity> addresses = new ArrayList<>();
-        Login login = new Login();
-
-        String email = "anusha.banthu@gmail.com";
-        String password = "abcdef";
-        login.setEmail(email);
-        login.setPassword(password);
-
-        customerEntity.setFirstName("anusha");
-        customerEntity.setLastName("banthu");
-        customerEntity.setEmail(email);
-        customerEntity.setPassword(password);
-        customerEntity.setMobileNumber(123243l);
-//        customerEntity.setAddresses();
-
-        address.setLine1("1");
-        address.setLine2("2");
-        address.setId(email);
-        address.setCity("city1");
-        address.setState("state1");
-        address.setPostalCode(1111);
-        address.setBillingAddress(true);
-        address.setShippingAddress(true);
-
-        addresses.add(addressToAddressEntity(address));
-        customerEntity.setAddressEntityList(addresses);
-        customer = customerEntityToCustomer(customerEntity);
-        Optional<RegisterCustomerEntity> customerEntityOptional = Optional.of(customerEntity);
-        List<RegisterCustomerEntity> customerEntityList = new ArrayList<>();
-        customerEntityList.add(customerEntity);
-
-        // Given
-        when(registerCustomerRepository.existsById(email)).thenReturn(true);
-        when(registerCustomerRepository.findById(email)).thenReturn(customerEntityOptional);
-        when(registerCustomerRepository.findAll()).thenReturn(customerEntityList);
-        when(token.getEmail()).thenReturn(email);
-        when(token.getTokenExpiryDateTime()).thenReturn(LocalDateTime.now().plusSeconds(1));
-//        accountService.setEncryptorConfig();
-//        when(accountService.encryptor.decrypt(password)).thenReturn(password);
-//        when(accountServiceMock.loginUser(login)).thenReturn(ResponseEntity.status(HttpStatus.OK).body("User logged in successfully (CODE 200)\n-------"));
-//        accountService.token.setEmail(email);
-//        Token never expires
-//        accountService.token.setTokenExpiryDateTime(LocalDateTime.now().plusSeconds(1));
-        accountService.registerCustomer(customer);
-        System.out.println(accountService.getCustomerDetailsById(email).getBody());
-        assertNotNull(accountService.getCustomerDetailsById(email));
-
-        // Checking for unauthoried status code when we try to add address without logging in
-//        assertEquals(accountService.addAddressDetails(address),ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login expired. Please login again to continue (CODE 401)"));
-
-//        System.out.println("Login:"+accountService.loginUser(login));
-//        accountService.addAddressDetails(address);
-//        assertEquals(accountService.addAddressDetails(address).getStatusCode(),200);
+    public void testAPIs() throws InterruptedException {
+        String login = "{\"email\":\"anusha.banthu@gmail.com\"," +
+                "\"password\":\"123456\"}";
+        String loginWrongPassword = "{\"email\":\"anusha.banthu@gmail.com\"," +
+                "\"password\":\"1\"}";
+        String registerCustomerPayload = "{" +
+                "\"firstName\":\"anusha\"," +
+                "\"lastName\":\"banthu\"," +
+                "\"email\":\"anusha.banthu@gmail.com\"," +
+                "\"mobileNumber\":9845981325," +
+                "\"password\":\"123456\","+
+                "\"addresses\":[{" +
+                "\"line1\": \"DNO:1\","+
+                "\"line2\": \"street1\","+
+                "\"postalCode\": 111,"+
+                "\"state\": \"state1\","+
+                "\"city\": \"city1\","+
+                "\"shippingAddress\": true,"+
+                "\"billingAddress\": false"+
+            "},"+
+            "{" +
+                "\"line1\": \"DNO:2\","+
+                "\"line2\": \"street2\","+
+                "\"postalCode\": 222,"+
+                "\"state\": \"state2\","+
+                "\"city\": \"city2\","+
+                "\"shippingAddress\": false,"+
+                "\"billingAddress\": true"+
+        "}]"+
+    "}";
+    String address = "{" +
+            "\"id\": \"anusha.banthu@gmail.com\","+
+            "\"line1\": \"DNO:1\","+
+            "\"line2\": \"street1\","+
+            "\"postalCode\": 111,"+
+            "\"state\": \"state1\","+
+            "\"city\": \"city1\","+
+            "\"shippingAddress\": true,"+
+            "\"billingAddress\": false"+
+            "}";
+    given()
+            .contentType(ContentType.JSON).body(login).post("http://localhost:8081/login-user")
+                    .then().statusCode(400);
+    given()
+            .contentType(ContentType.JSON).body(registerCustomerPayload).post("http://localhost:8081/register-customer")
+            .then().statusCode(200)
+            .body("email", equalTo("anusha.banthu@gmail.com")).and()
+            .body("firstName", equalTo("anusha"));
+    given()
+            .contentType(ContentType.JSON).body(login).post("http://localhost:8081/login-user")
+            .then().statusCode(200);
+    given()
+            .contentType(ContentType.JSON).body(login).post("http://localhost:8081/login-user")
+            .then().statusCode(208);
+//    wait(20000);
+//    given()
+//            .contentType(ContentType.JSON).body(loginWrongPassword).post("http://localhost:8081/login-user")
+//            .then().statusCode(401);
+    given()
+            .contentType(ContentType.JSON).post("http://localhost:8081/get-customer-details-by-id?id=anusha.banthu@gmail.com")
+            .then().statusCode(200)
+            .body("email", equalTo("anusha.banthu@gmail.com")).and()
+            .body("mobileNumber", equalTo(9845981325l));
+    given()
+            .contentType(ContentType.JSON).body(address).post("http://localhost:8081/add-address")
+            .then().statusCode(200)
+            .body("email", equalTo("anusha.banthu@gmail.com"));
     }
-    public RegisterCustomer customerEntityToCustomer(RegisterCustomerEntity entity){
-        RegisterCustomer customer = new RegisterCustomer();
-        customer.setFirstName(entity.getFirstName());
-        customer.setLastName(entity.getLastName());
-        customer.setEmail(entity.getEmail());
-        customer.setPassword(entity.getPassword());
-        customer.setMobileNumber(entity.getMobileNumber());
-        return customer;
-    }
-    public AddressEntity addressToAddressEntity(Address address){
-        AddressEntity addressEntity = new AddressEntity();
-        addressEntity.setShippingAddress(address.getShippingAddress());
-        addressEntity.setBillingAddress(address.getBillingAddress());
-        addressEntity.setId(address.getId());
-        addressEntity.setCity(address.getCity());
-        addressEntity.setState(address.getState());
-        addressEntity.setPostalCode(address.getPostalCode());
-        addressEntity.setLine1(address.getLine1());
-        addressEntity.setLine2(address.getLine2());
-        return addressEntity;
-    }
+
 }

@@ -8,6 +8,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,12 @@ public class OrderService {
 	private OrderRepository orderRepository;
 	RestTemplate restTemplate = new RestTemplate();
 
-	public ResponseEntity addProductsToCart(Order order){
+	public ResponseEntity addProductsToCart(String email, Order order){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
 		List<String> qunatities = new ArrayList<>();
 		OrderEntity orderEntity = new OrderEntity();
 //		Checking whether the sku exists in inventory or not
@@ -65,7 +71,12 @@ public class OrderService {
 		return ResponseEntity.status(HttpStatus.OK).body(orderRepository.save(orderEntity));
 	}
 
-	public ResponseEntity viewCart() {
+	public ResponseEntity viewCart(String email) {
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
 		List<String> prices = new ArrayList<>();
 		List<Integer> subTotal = new ArrayList<>();
 		Integer total=0;
@@ -90,7 +101,12 @@ public class OrderService {
 		else	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No items in cart (CODE 400)\n");
 	}
 
-	public ResponseEntity selectShippingAddress(String id,Integer orderCode){
+	public ResponseEntity selectShippingAddress(String email,String id,Integer orderCode){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
 		if(!orderRepository.existsById(orderCode))
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is not available with order code:"+orderCode+" CODE(400)");
 		String getAddressUrl = "http://localhost:8081/get-address-details-by-id?id="+id;
@@ -114,7 +130,12 @@ public class OrderService {
 
 		return ResponseEntity.status(HttpStatus.OK).body(orderRepository.save(orderEntity));
 	}
-	public ResponseEntity selectBillingAddress(String id,Integer orderCode){
+	public ResponseEntity selectBillingAddress(String email,String id,Integer orderCode){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
 		if(!orderRepository.existsById(orderCode))
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is not available with order code:"+orderCode+" CODE(400)");
 		String getAddressUrl = "http://localhost:8081/get-address-details-by-id?id="+id;
@@ -146,7 +167,13 @@ public class OrderService {
 		return ResponseEntity.status(HttpStatus.OK).body(orderRepository.save(orderEntity));
 	}
 
-	public ResponseEntity placeOrder(Integer orderCode){
+	public ResponseEntity placeOrder(String email,Integer orderCode){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
+
 		if(!orderRepository.existsById(orderCode))
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order code:"+orderCode+" invalid CODE(400)");
 		OrderEntity orderEntity = orderRepository.getById(orderCode);
@@ -186,13 +213,25 @@ public class OrderService {
 		orderEntity = orderRepository.save(orderEntity);
 		return ResponseEntity.status(HttpStatus.OK).body(orderEntity);
 	}
-	public ResponseEntity getOrderStatus(Integer orderCode){
+	public ResponseEntity getOrderStatus(String email,Integer orderCode){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
+
 		if(!orderRepository.existsById(orderCode))	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is not available with orderCode:"+orderCode+" (CODE 400)\n");
 		return ResponseEntity.status(HttpStatus.OK).body("Order state:"+orderRepository.getById(orderCode).getStatus());
 	}
 
-	public ResponseEntity changeOrderStatus(Integer orderCode, String orderStatus) {
+	public ResponseEntity changeOrderStatus(String email,Integer orderCode, String orderStatus) {
 		//RECEIVED to PROCESSING, PACKING, SHIPPING, DELIVERED
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
+
 		OrderEntity orderEntity = orderRepository.getById(orderCode);
 		String currentStatus = orderEntity.getStatus();
 		boolean changeStatus = true;
@@ -206,7 +245,13 @@ public class OrderService {
 		else return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid change order status request - Current:"+currentStatus+",Required:"+orderStatus);
 	}
 
-	public ResponseEntity returnProduct(Integer orderCode){
+	public ResponseEntity returnProduct(String email,Integer orderCode){
+		String url = "http://localhost:8081/get-token-expiry-datetime?email="+email;
+		HttpEntity<String> req = new HttpEntity<>(email);
+		ResponseEntity<LocalDateTime> resp = restTemplate.exchange(url, HttpMethod.POST, req, LocalDateTime.class);
+		if(resp.getBody().isBefore(LocalDateTime.now()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login expired. Please login again to continue (CODE 400)\n");
+
 		OrderEntity orderEntity = orderRepository.getById(orderCode);
 		String currentStatus = orderEntity.getStatus();
 		if (currentStatus.equals("RECEIVED") || currentStatus.equals("PROCESSING") || currentStatus.equals("PACKING"))

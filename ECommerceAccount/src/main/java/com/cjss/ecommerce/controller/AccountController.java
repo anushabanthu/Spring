@@ -34,9 +34,9 @@ public class AccountController {
     public ResponseEntity loginUser(@RequestBody Login login) throws Exception{
         return accountService.loginUser(login);
     }
-    @PostMapping("/get-address-count-by-id")
-    public Integer getAddressesCountById(@RequestBody String id) {
-        return accountService.getAddressesCountById(id);
+    @PostMapping("/get-token-expiry-datetime")
+    public ResponseEntity getTokenExpiryDateTime(String email){
+        return accountService.getTokenExpiryDateTime(email);
     }
 }
 
